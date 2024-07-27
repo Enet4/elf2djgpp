@@ -32,13 +32,14 @@ pub const R_386_GOTPC: u32 = 10;
 ///
 /// Link them to the real DJGPP functions instead by renaming the symbols, what could possibly go
 /// wrong
-const FIX_EXTERN_SYMBOLS_PREFIXES: [(&str, &[u8]); 6] = [
+const FIX_EXTERN_SYMBOLS_PREFIXES: [(&str, &[u8]); 7] = [
     ("compiler_builtins::mem::memset", b"memset"),
     ("compiler_builtins::mem::memcmp", b"memcmp"),
     ("compiler_builtins::mem::bcmp", b"bcmp"),
     ("compiler_builtins::mem::strlen", b"strlen"),
     ("compiler_builtins::mem::memcpy", b"memcpy"),
     ("compiler_builtins::mem::memmove", b"memmove"),
+    ("compiler_builtins::math::", b""),
 ];
 
 pub fn fix_extern_symbol(name: Cow<[u8]>) -> Cow<[u8]> {

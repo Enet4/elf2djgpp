@@ -2,6 +2,7 @@
 set -e
 target=debug
 extra_opts=
+iset=i586
 
 show_usage() {
     echo USAGE: `basename $0` [--release]
@@ -33,13 +34,13 @@ fi
 
 echo "Building $target target..."
 cd rust-lib
-cargo build -Z build-std --target=i586-unknown-none-gnu.json $extra_opts
+cargo build -Z build-std --target=$iset-unknown-none-gnu.json $extra_opts
 
 # Extract the object files from the ELF static library
 mkdir -p ../build/$target/djgpp-lib
 cd ../build/$target/djgpp-lib
 rm -f *.o
-llvm-ar x ../../../rust-lib/target/i586-unknown-none-gnu/"$target"/librust_lib.a
+llvm-ar x ../../../rust-lib/target/$iset-unknown-none-gnu/"$target"/librust_lib.a
 
 echo "Building release elf2djgpp..."
 cd ../../../..
@@ -47,7 +48,9 @@ cargo build --release
 
 echo "Converting ELF objects to COFF-GO32..."
 for f in example/build/$target/djgpp-lib/*.o; do
-    ./target/release/elf2djgpp -q -i $f
+    ./target/release/elf2djgpp -q $f $f.new
+    rm $f
+    mv $f.new $f
 done
 cd example/build/$target
 rm -f librust_lib.a

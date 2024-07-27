@@ -1,5 +1,6 @@
 # DJGPP compiler
-DJGPP_GCC = i586-pc-msdosdjgpp-gcc
+ISET = i586
+DJGPP_GCC = $(ISET)-pc-msdosdjgpp-gcc
 
 
 # Debug target

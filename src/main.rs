@@ -162,11 +162,11 @@ fn output_file(path: &Option<PathBuf>) -> (File, Option<PathBuf>) {
     }
 }
 
-fn convert<S: Read + Seek>(mut binary: &mut ElfStream<LittleEndian, S>) -> Coff {
+fn convert<S: Read + Seek>(binary: &mut ElfStream<LittleEndian, S>) -> Coff {
     let mut coff = Coff::new();
 
     // Add all the sections
-    let sections = get_elf_sections_to_process(&mut binary);
+    let sections = get_elf_sections_to_process(binary);
     for section in sections.values() {
         coff.add_elf_section(
             binary,
@@ -335,10 +335,7 @@ pub fn get_elf_rel_sections<S: Read + Seek>(
     section_headers
         .iter()
         .filter_map(|sh| match sh.sh_type {
-            SHT_REL => Some((
-                strtab.get(sh.sh_name as usize).unwrap().to_owned(),
-                sh.clone(),
-            )),
+            SHT_REL => Some((strtab.get(sh.sh_name as usize).unwrap().to_owned(), *sh)),
             _ => None,
         })
         .collect()

@@ -57,14 +57,14 @@ pub fn fix_extern_symbol(name: Cow<[u8]>) -> Cow<[u8]> {
             return Cow::from(replacement);
         }
     }
-    return name;
+    name
 }
 
 /// Helper to get the string table from an ElfStream, assuming it exists.  We have to do this in
 /// every new scope because borrow checker.
 fn get_strtab<S: Read + Seek>(
     binary: &mut ElfStream<LittleEndian, S>,
-) -> elf::string_table::StringTable {
+) -> elf::string_table::StringTable<'_> {
     let (_, maybe_strtab) = binary.section_headers_with_strtab().unwrap();
     maybe_strtab.unwrap()
 }
@@ -191,7 +191,7 @@ impl Coff {
         self.symbol_for_elf_symbol_index
             .insert(elf_symbol_index, symbol.clone());
         self.symbols.push(symbol.clone());
-        return Some(symbol);
+        Some(symbol)
     }
 
     pub fn add_relocation(
@@ -459,7 +459,7 @@ impl StringTable {
         }
     }
 
-    pub fn get_name(&self, name: &Name) -> Cow<[u8]> {
+    pub fn get_name(&self, name: &Name) -> Cow<'_, [u8]> {
         match name {
             Name::Literal(s) => Cow::Owned(s.iter().cloned().take_while(|c| *c != b'\0').collect()),
             Name::StringTableIndex(idx) => Cow::Borrowed(self.get_string(*idx)),

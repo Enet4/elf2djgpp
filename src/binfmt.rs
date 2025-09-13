@@ -34,17 +34,16 @@ impl CoffFileHeader {
         flags |= CoffFileFlags::LineNumsStripped;
         // TODO: how do we know if local syms are stripped?
         flags |= CoffFileFlags::LocalSymsStripped;
-        if coff
+        if !coff
             .sections
             .iter()
-            .find(|s| !s.borrow().relocations.len() > 0)
-            .is_none()
+            .any(|s| !s.borrow().relocations.len() > 0)
         {
             flags |= CoffFileFlags::RelocsStripped;
         }
 
         Self {
-            magic: COFF_MAGIC.clone(),
+            magic: *COFF_MAGIC,
             num_sections: coff.sections.len() as u16,
             timestamp: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
@@ -172,7 +171,7 @@ impl CoffSymbol {
             value: symbol.value,
             section_number: symbol.section_number.bits(),
             symbol_type: 0,
-            storage_class: symbol.storage_class.clone() as u8,
+            storage_class: symbol.storage_class as u8,
             num_aux: 0,
         }
     }
@@ -226,14 +225,6 @@ impl CoffSerialize for CoffRelocation {
 pub trait CoffSerialize {
     const SIZE: usize;
     fn serialize<W: Write>(&self, serializer: &mut CoffWriter<W>) -> Result<usize>;
-}
-
-pub trait CoffSerializer {
-    fn write_chars(&mut self, chars: &[u8]) -> Result<usize>;
-    fn write_i16(&mut self, value: &i16) -> Result<usize>;
-    fn write_u8(&mut self, value: &u8) -> Result<usize>;
-    fn write_u16(&mut self, value: &u16) -> Result<usize>;
-    fn write_u32(&mut self, value: &u32) -> Result<usize>;
 }
 
 pub struct CoffWriter<W: Write> {
